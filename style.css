@@ -53,9 +53,11 @@ button{
     padding: 12px 14px;
     border-radius: 5px;
 }
-.date_yesterday{
-    margin-bottom: 20px;
-}
+
 textarea#blockers{
     border-radius: 10px;
+}
+.input{
+    margin-bottom: 20px;
+    padding: 5px;
 }
