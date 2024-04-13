@@ -1,0 +1,61 @@
+body{
+    background-color: rgb(49 51 56);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+h1{
+    text-align: center;
+}
+li{
+    list-style-type: none;
+}
+a{
+    color: #fff;
+}
+ul{
+    padding: 0;
+    margin: 0;
+}
+.tasks__item{
+    background-color: #ccc;
+    border-radius: 10px;
+    padding: 0;
+    margin: 0;
+    color: black;
+    padding: 20px;
+}
+textarea{
+    display: block;
+    margin: 20px 0;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.report__meeting{
+    background-color: #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    color: #000;
+}
+.report__meetings{
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+}
+
+button{
+    background: rgb(88, 101, 242);
+    border-color: rgb(88, 101, 242);
+    color: rgb(255, 255, 255);
+    padding: 12px 14px;
+    border-radius: 5px;
+}
+.date_yesterday{
+    margin-bottom: 20px;
+}
+textarea#blockers{
+    border-radius: 10px;
+}
