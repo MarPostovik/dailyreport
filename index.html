@@ -16,7 +16,7 @@
       <div class="report__wrapper">
         <h2>✅What I did yesterday:</h2>
         <label for="yesterday-date">Date:</label>
-        <input type="date" id="yesterday-date" class="input">
+        <input type="date" id="yesterday-date" class="input"> <span>(If the date is actually yesterday date, just don't select it)</span>
         <ul id="yesterdayTasks" class="tasks">
             <li class="tasks__item">
                 <div>
@@ -73,7 +73,7 @@
             <h3>👥Meeting with:</h3>
             <li class="report__meeting">
                 <label for="meeting-person">Name and Position / Team</label>
-                <input type="text" class="meeting-person" placeholder="Attendee 1"> 
+                <input type="text" class="meeting-person" placeholder="Mentor Caleb"> 
                 <label for="meeting-cst">Time CST:</label>
                 <input type="time" class="meeting-cst">
                 <label for="meeting-eet">Time EET:</label>
@@ -95,25 +95,12 @@
   <script>
     // Function to format date from yyyy-mm-dd to Month day, year format
     function formatDate(inputDate) {
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-        const parts = inputDate.split('-');
-        const year = parts[0];
-        const monthIndex = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-
-        const monthName = months[monthIndex];
-        const formattedDate = `${monthName} ${day}, ${year}`;
-
-        return formattedDate;
+        return inputDate ? new Date(inputDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
     }
 
     // Function to convert time from 24-hour format to 12-hour format
     function convertTo12HourFormat(time24) {
-        const [hours, minutes] = time24.split(':');
-        const period = hours >= 12 ? 'PM' : 'AM';
-        const hour12 = hours % 12 || 12; // Handle midnight (00:00) as 12 AM
-        return `${hour12}:${minutes.padStart(2, '0')} ${period}`;
+        return time24 ? new Date('1970-01-01T' + time24 + 'Z').toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : 'Not selected';
     }
 
     let ReportDate;
@@ -179,11 +166,13 @@
     }
 
     async function sendMessage() {
-      // Your webhook URL
-      const webhookUrl = "https://discord.com/api/webhooks/1228352371961368597/KRc9w1rJcpHujyHJn9y95Q0Es0TNOrwnKGfHJklKcu8fDp8EYZnR2-wVF6aWePptCh52";
+      
+      const webhookUrl = "https://discord.com/api/webhooks/1228352371961368597/KRc9w1rJcpHujyHJn9y95Q0Es0TNOrwnKGfHJklKcu8fDp8EYZnR2-wVF6aWePptCh52"; 
+      // const webhookUrl = "https://discord.com/api/webhooks/1227299910970249429/KPJ-NfB2aqT53rlifmw4e9z7nwEV-HwHRWANNc-olwhiDuyhjtZjmE5BgB7eUZAwnGut"; my server
+
       const payload = {
         username: `${name}`,
-        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}\n👥Met with: \n${getMeetingsInfo('yesterdayMeetings')}\n📌What I will do today:\n\n${getTasksInfo('todayTasks')}\n👥Meeting with:\n${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
+        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}👥Met with: \n${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}👥Meeting with:\n${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
       };
 
       try {
@@ -211,7 +200,7 @@
             const taskDescriptionInput = task.querySelector('.task-description');
             const taskDescription = taskDescriptionInput.value.trim() || `Task ${index + 1} description`;
             const taskDeadlineInput = task.querySelector('.task-deadline');
-            const taskDeadline = formatDate(taskDeadlineInput.value) || 'None';
+            const taskDeadline = formatDate(taskDeadlineInput.value) || 'Not selected';
 
             const taskPriorityRadios = task.querySelectorAll(`input[name="priority-${taskContainerId}-${index + 1}"]:checked`);
             let taskPriority = 'Not selected';
@@ -230,10 +219,12 @@
         let meetingsInfo = '';
         meetingItems.forEach((meeting, index) => {
             const attendeeName = meeting.querySelector('.meeting-person').value || `Attendee ${index + 1}`;
-            const meetingCST = convertTo12HourFormat(meeting.querySelector('.meeting-cst').value) || '';
-            const meetingEET = convertTo12HourFormat(meeting.querySelector('.meeting-eet').value) || '';
+            const meetingCST = meeting.querySelector('.meeting-cst').value || '';
+            const meetingEET = meeting.querySelector('.meeting-eet').value || '';
             const meetingBrief = meeting.querySelector('.meeting-brief')?.value || '';
-            meetingsInfo += `${attendeeName} 🕒 ${meetingCST}, CST / ${meetingEET}, EET\n${meetingBrief ? `> ${meetingBrief}\n\n` : ''}`;
+            const timeCST = meetingCST ? convertTo12HourFormat(meetingCST) : 'Not selected';
+            const timeEET = meetingEET ? convertTo12HourFormat(meetingEET) : 'Not selected';
+            meetingsInfo += `${attendeeName} 🕒 ${timeCST}, CST / ${timeEET}, EET\n${meetingBrief ? `> ${meetingBrief}\n\n` : ''}`;
         });
         return meetingsInfo;
     }
