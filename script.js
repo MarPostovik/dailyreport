@@ -5,7 +5,23 @@ function formatDate(inputDate) {
 
 // Function to convert time from 24-hour format to 12-hour format
 function convertTo12HourFormat(time24) {
-    return time24 ? new Date('1970-01-01T' + time24 + 'Z').toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : 'Not selected';
+    if (!time24) return 'Not selected';
+
+    const [hours, minutes] = time24.split(':');
+    let period = 'AM';
+    let hour12 = parseInt(hours, 10);
+
+    if (hour12 >= 12) {
+        period = 'PM';
+        if (hour12 > 12) {
+            hour12 -= 12;
+        }
+    }
+
+    // Pad single-digit hours with leading zero for consistency
+    const formattedHour = hour12.toString().padStart(2, '0');
+
+    return `${formattedHour}:${minutes} ${period}`;
 }
 
 // Function to update the visibility of the Remove Last Task button
