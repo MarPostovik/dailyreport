@@ -9,10 +9,12 @@
 <body>
   <form class="report">
       <h1>Daily report</h1>
-      <label for="name">Your name: </label>
-      <input type="text" id="name" placeholder="John Doe" class="input"><br>
+      <label for="department">Department:</label>
+      <select id="department" name="department"></select><br>
+      <label for="employee">Your name:</label>
+      <select id="employee" name="employee"></select><br>
       <label for="date">📅 Date: </label>
-      <input type="date" id="date" class="input">
+      <input type="date" id="today-date" class="input">
       <div class="report__wrapper">
         <h2>✅What I did yesterday:</h2>
         <label for="yesterday-date">Date:</label>
@@ -22,6 +24,13 @@
                 <div>
                     <textarea name="" class="task-description" cols="40" rows="5">Task 1 description</textarea>
                 </div>
+                <button class="add-link-btn" onclick="addLink(this)" type="button">Add Link</button>
+                <div class="link-inputs" style="display: none;">
+                    <input type="text" placeholder="Link description" class="link-description">
+                    <input type="url" placeholder="Link URL" class="link-url">
+                    <button onclick="saveLink(this)" type="button" class="save-btn">Save</button>
+                </div>
+                <div class="task-links"></div>
                 <label for="task-deadline">Deadline:</label> <input type="date" class="task-deadline">
                 <p>Priority:</p>
                 <div class="priority">
@@ -34,7 +43,8 @@
                 </div>
             </li>
         </ul>
-        <button type="button" onclick="addTask('yesterdayTasks')">Add Task</button>
+        <button type="button" onclick="addTask('yesterdayTasks')" class="btn-primary">Add Task</button>
+        <button type="button" onclick="removeLastTask('yesterdayTasks')" class="btn-secondary">Remove Last Task</button>
         <ul id="yesterdayMeetings" class="report__meetings">
             <h3>👥Met with:</h3>
             <li class="report__meeting">
@@ -45,9 +55,17 @@
                 <label for="meeting-eet">Time EET:</label>
                 <input type="time" class="meeting-eet">
                 <textarea name="" class="meeting-brief" cols="40" rows="3">Meeting 1 brief</textarea>
+                <button class="add-link-btn" onclick="addLink(this)" type="button">Add Link</button>
+                <div class="link-inputs" style="display: none;">
+                    <input type="text" placeholder="Link description" class="link-description">
+                    <input type="url" placeholder="Link URL" class="link-url">
+                    <button onclick="saveLink(this)" type="button" class="save-btn">Save</button>
+                </div>
+                <div class="task-links"></div>
             </li>
         </ul>
-        <button type="button" onclick="addMeeting('yesterdayMeetings')">Add Meeting</button>
+        <button type="button" onclick="addMeeting('yesterdayMeetings')" class="btn-primary">Add Meeting</button>
+        <button type="button" onclick="removeLastMeeting('yesterdayMeetings')" class="btn-secondary">Remove Last Meeting</button>
       </div>
       <div class="report__wrapper">
         <h2>📌What I will do today:</h2>
@@ -56,6 +74,13 @@
                 <div>
                     <textarea name="" class="task-description" cols="40" rows="5">Task 1 description</textarea>
                 </div>
+                <button class="add-link-btn" onclick="addLink(this)" type="button">Add Link</button>
+                <div class="link-inputs" style="display: none;">
+                    <input type="text" placeholder="Link description" class="link-description">
+                    <input type="url" placeholder="Link URL" class="link-url">
+                    <button onclick="saveLink(this)" type="button" class="save-btn">Save</button>
+                </div>
+                <div class="task-links"></div>
                 <label for="task-deadline">Deadline:</label> <input type="date" class="task-deadline">
                 <p>Priority:</p>
                 <div class="priority">
@@ -68,7 +93,8 @@
                 </div>
             </li>
         </ul>
-        <button type="button" onclick="addTask('todayTasks')">Add Task</button>
+        <button type="button" onclick="addTask('todayTasks')" class="btn-primary">Add Task</button>
+        <button type="button" onclick="removeLastTask('todayTasks')" class="btn-secondary">Remove Last Task</button>
         <ul id="todayMeetings" class="report__meetings">
             <h3>👥Meeting with:</h3>
             <li class="report__meeting">
@@ -80,17 +106,25 @@
                 <input type="time" class="meeting-eet">
             </li>
         </ul>
-        <button type="button" onclick="addMeeting('todayMeetings')">Add Meeting</button>
+        <button type="button" onclick="addMeeting('todayMeetings')" class="btn-primary">Add Meeting</button>
+        <button type="button" onclick="removeLastMeeting('todayMeetings')" class="btn-secondary">Remove Last Meeting</button>
+
       </div>
+      <div class="media">
+        <h3>Upload Photos (optional):</h3>
+        <input type="file" id="photos" name="photos" accept="image/*" style="display: none;">
+        <div id="photoList" class="photo-list"></div>
+        <button type="button" id="addPhotoBtn" class="btn-primary">Add Photo</button>
+        <button type="button" id="removePhotoBtn" style="display: none;" class="btn-secondary">Remove Last Photo</button>
+    </div>
+    
       <div class="blockers">
         <h3>⛔️Blockers:</h3>
         <textarea name="" id="blockers" cols="40" rows="5">None</textarea>
       </div>
       <a href="https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8" target="_blank">Documentation on daily reports</a>
-      <p>Click on these two buttons one by one to send the report</p>
-      <button type="submit" id="submitBtn" style="display: block;">Submit</button>
   </form>
-  <button onclick="sendMessage()">Send</button>
+  <button onclick="sendMessage()" class="btn-danger">Send</button>
   <script src="script.js"></script>
 </body>
 </html>

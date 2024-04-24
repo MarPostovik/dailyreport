@@ -8,22 +8,37 @@ function convertTo12HourFormat(time24) {
     return time24 ? new Date('1970-01-01T' + time24 + 'Z').toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : 'Not selected';
 }
 
-let ReportDate;
-let name;
-let YesterdayDate;
-let TodayDate;
-let blockers;
+// Function to update the visibility of the Remove Last Task button
+function updateRemoveTaskButtonVisibility(taskContainerId) {
+    const taskContainer = document.getElementById(taskContainerId);
+    const removeTaskBtn = taskContainer.nextSibling.nextSibling.nextSibling.nextSibling;
+    
+    if (taskContainer && taskContainer.querySelectorAll('.tasks__item').length > 0) {
+        removeTaskBtn.style.display = 'block'; // Show the button
+    } else {
+        removeTaskBtn.style.display = 'none'; // Hide the button
+    }
+}
 
-const submitBtn = document.getElementById('submitBtn');
-submitBtn.addEventListener('click', function(e){
-    e.preventDefault();
-    ReportDate = formatDate(document.getElementById('date').value);
-    name = document.getElementById('name').value;
-    YesterdayDate = formatDate(document.getElementById('yesterday-date').value);
-    TodayDate = new Date().toISOString().slice(0, 10); // Get today's date
-    blockers = document.getElementById('blockers').value;
-});
+// Function to update the visibility of the Remove Last Meeting button
+function updateRemoveMeetingButtonVisibility(meetingContainerId) {
+    const meetingContainer = document.getElementById(meetingContainerId);
+    const removeMeetingBtn = meetingContainer.nextSibling.nextSibling.nextSibling.nextSibling;
+    if (meetingContainer && meetingContainer.querySelectorAll('.report__meeting').length > 0) {
+        removeMeetingBtn.style.display = 'block'; // Show the button
+    } else {
+        removeMeetingBtn.style.display = 'none'; // Hide the button
+    }
+}
 
+// Call the visibility update functions for both tasks and meetings on page load
+updateRemoveTaskButtonVisibility('yesterdayTasks');
+updateRemoveMeetingButtonVisibility('yesterdayMeetings');
+updateRemoveTaskButtonVisibility('todayTasks');
+updateRemoveMeetingButtonVisibility('todayMeetings');
+
+
+// Updated addTask function with link button
 function addTask(taskContainerId) {
     const taskContainer = document.getElementById(taskContainerId);
     const taskCount = taskContainer.querySelectorAll('.tasks__item').length + 1;
@@ -34,6 +49,13 @@ function addTask(taskContainerId) {
         <div>
             <textarea name="" class="task-description" cols="40" rows="5">Task ${taskCount} description</textarea>
         </div>
+        <button class="add-link-btn" onclick="addLink(this)" type="button">Add Link</button>
+        <div class="link-inputs" style="display: none;">
+            <input type="text" placeholder="Link description" class="link-description">
+            <input type="url" placeholder="Link URL" class="link-url">
+            <button onclick="saveLink(this)" type="button">Save</button>
+        </div>
+        <div class="task-links"></div>
         <label for="task-deadline">Deadline:</label> <input type="date" class="task-deadline">
         <p>Priority:</p>
         <div class="priority">
@@ -47,8 +69,10 @@ function addTask(taskContainerId) {
     `;
 
     taskContainer.appendChild(newTask);
+    updateRemoveTaskButtonVisibility(taskContainerId);
 }
 
+// Updated addMeeting function with link button
 function addMeeting(meetingContainerId) {
     const meetingContainer = document.getElementById(meetingContainerId);
     const meetingCount = meetingContainer.querySelectorAll('.report__meeting').length + 1;
@@ -64,38 +88,39 @@ function addMeeting(meetingContainerId) {
         <input type="time" class="meeting-eet">
         ${meetingContainerId.includes('yesterday') ? `
             <textarea name="" class="meeting-brief" cols="40" rows="3">Meeting ${meetingCount} brief</textarea>
+            <button class="add-link-btn" onclick="addLink(this)" type="button">Add Link</button>
+            <div class="link-inputs" style="display: none;">
+                <input type="text" placeholder="Link description" class="link-description">
+                <input type="url" placeholder="Link URL" class="link-url">
+                <button onclick="saveLink(this)" type="button">Save</button>
+            </div>
+            <div class="task-links"></div>
         ` : ''}
     `;
 
     meetingContainer.appendChild(newMeeting);
+    updateRemoveMeetingButtonVisibility(meetingContainerId);
 }
 
-async function sendMessage() {
-  
-  const webhookUrl = "https://discord.com/api/webhooks/1228352371961368597/KRc9w1rJcpHujyHJn9y95Q0Es0TNOrwnKGfHJklKcu8fDp8EYZnR2-wVF6aWePptCh52"; 
-  // const webhookUrl = "https://discord.com/api/webhooks/1227299910970249429/KPJ-NfB2aqT53rlifmw4e9z7nwEV-HwHRWANNc-olwhiDuyhjtZjmE5BgB7eUZAwnGut"; my server
 
-  const payload = {
-    username: `${name}`,
-    content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}👥Met with: \n${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}👥Meeting with:\n${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
-  };
-
-  try {
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+function removeLastTask(taskContainerId) {
+    const taskContainer = document.getElementById(taskContainerId);
+    const taskItems = taskContainer.querySelectorAll('.tasks__item');
+    if (taskItems.length > 0) {
+        taskContainer.removeChild(taskItems[taskItems.length - 1]);
     }
-  } catch (error) {
-    console.error('There has been a problem with your fetch operation:', error);
-  }
+    updateRemoveTaskButtonVisibility(taskContainerId);
 }
+
+function removeLastMeeting(meetingContainerId) {
+    const meetingContainer = document.getElementById(meetingContainerId);
+    const meetingItems = meetingContainer.querySelectorAll('.report__meeting');
+    if (meetingItems.length > 0) {
+        meetingContainer.removeChild(meetingItems[meetingItems.length - 1]);
+    }
+    updateRemoveMeetingButtonVisibility(meetingContainerId);
+}
+
 
 function getTasksInfo(taskContainerId) {
     const taskContainer = document.getElementById(taskContainerId);
@@ -107,13 +132,22 @@ function getTasksInfo(taskContainerId) {
         const taskDeadlineInput = task.querySelector('.task-deadline');
         const taskDeadline = formatDate(taskDeadlineInput.value) || 'Not selected';
 
+        const taskLinkContainer = task.querySelector('.task-links');
+        const taskLinkItems = taskLinkContainer.querySelectorAll('.task-link');
+        let taskLinkInfo = '';
+        taskLinkItems.forEach((link) =>  {
+            console.log(link.querySelector('a').innerText)
+            const linkDescription = link.querySelector('a').innerText;
+            const linkUrl = link.querySelector('a').href;
+            taskLinkInfo += ` | [${linkDescription}](${linkUrl})`;
+        })
         const taskPriorityRadios = task.querySelectorAll(`input[name="priority-${taskContainerId}-${index + 1}"]:checked`);
         let taskPriority = 'Not selected';
         if (taskPriorityRadios.length > 0) {
             taskPriority = taskPriorityRadios[0].value;
         }
 
-        tasksInfo += `- ${taskDescription}\n> Deadline: ${taskDeadline}\n> Priority: ${taskPriority}\n\n`;
+        tasksInfo += `- ${taskDescription} ${taskLinkInfo}\n> Deadline: ${taskDeadline}\n> Priority: ${taskPriority}\n\n`;
     });
     return tasksInfo;
 }
@@ -129,7 +163,230 @@ function getMeetingsInfo(meetingContainerId) {
         const meetingBrief = meeting.querySelector('.meeting-brief')?.value || '';
         const timeCST = meetingCST ? convertTo12HourFormat(meetingCST) : 'Not selected';
         const timeEET = meetingEET ? convertTo12HourFormat(meetingEET) : 'Not selected';
-        meetingsInfo += `${attendeeName} 🕒 ${timeCST}, CST / ${timeEET}, EET\n${meetingBrief ? `> ${meetingBrief}\n\n` : ''}`;
+
+        // Get the added link description and URL for this meeting
+        const meetingLinkContainer = meeting.querySelector('.task-links');
+        const meetingLinkItems = meetingLinkContainer?.querySelectorAll('.task-link');
+        let meetingLinkInfo = '';
+        if (meetingLinkItems) {
+        meetingLinkItems.forEach((link) =>  {
+            console.log(link.querySelector('a').innerText)
+            const linkDescription = link.querySelector('a').innerText;
+            const linkUrl = link.querySelector('a').href;
+            meetingLinkInfo += ` | [${linkDescription}](${linkUrl})`;
+        })
+      }
+        meetingsInfo += `${attendeeName} 🕒 ${timeCST}, CST / ${timeEET}, EET\n${meetingBrief ? `> ${meetingBrief} ${meetingLinkInfo}\n\n` : ''}`;
     });
     return meetingsInfo;
 }
+
+
+// Function to add a new file input for additional photos
+function addPhoto() {
+    const photosInput = document.getElementById('photos');
+    const newInput = document.createElement('input');
+    newInput.type = 'file';
+    newInput.name = 'photos';
+    newInput.accept = 'image/*';
+    // newInput.multiple = true;
+    newInput.addEventListener('change', function(e) {
+        displayPhotos(e.target.files);
+    });
+    photosInput.parentNode.insertBefore(newInput, photosInput.nextSibling);
+}
+
+// Add event listener to trigger file input click on "Add Photo" button click
+document.getElementById('addPhotoBtn').addEventListener('click', function() {
+    document.getElementById('photos').click(); // Trigger file input click
+});
+
+let uploadedPhotos = []; // Array to store uploaded photos
+
+// Function to update the visibility of the Remove Last Photo button
+function updateRemoveButtonVisibility() {
+    const removePhotoBtn = document.getElementById('removePhotoBtn');
+    if (uploadedPhotos.length > 0) {
+        removePhotoBtn.style.display = 'block'; // Show the button
+    } else {
+        removePhotoBtn.style.display = 'none'; // Hide the button
+    }
+}
+
+// Function to remove the last uploaded photo from the array and UI
+function removeLastPhoto() {
+    const photoList = document.getElementById('photoList');
+    const lastPhotoContainer = photoList.lastElementChild; // Get the last photo container
+
+    if (lastPhotoContainer) {
+        uploadedPhotos.pop(); // Remove the last photo from the uploadedPhotos array
+        photoList.removeChild(lastPhotoContainer); // Remove the last photo container from the UI
+        updateRemoveButtonVisibility(); // Update button visibility
+    }
+}
+
+// Add event listener to trigger removal of last photo on button click
+document.getElementById('removePhotoBtn').addEventListener('click', function() {
+    removeLastPhoto();
+});
+
+// Function to display uploaded photos
+function displayPhotos(files) {
+    const photoList = document.getElementById('photoList');
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const imageElement = document.createElement('img');
+        imageElement.src = URL.createObjectURL(file);
+        imageElement.alt = file.name;
+        imageElement.classList.add('uploaded-photo');
+
+        // Create a container div for each photo with additional styling
+        const photoContainer = document.createElement('div');
+        photoContainer.classList.add('photo-container');
+        photoContainer.appendChild(imageElement);
+
+        // Append the container to the photo list
+        photoList.appendChild(photoContainer);
+        uploadedPhotos.push(file); // Add file to uploaded photos array
+    }
+
+    updateRemoveButtonVisibility(); // Update button visibility after adding photos
+}
+
+
+document.getElementById('photos').addEventListener('change', function(e) {
+    const files = e.target.files;
+    // uploadedPhotos = []; // Clear previous uploaded photos array
+    displayPhotos(files);
+});
+
+
+    const departmentDropdown = document.getElementById('department');
+    const employeeDropdown = document.getElementById('employee');
+    
+    let departmentsData; // Store JSON data
+
+    // Load JSON data
+    fetch('employees.json')
+        .then(response => response.json())
+        .then(data => {
+            departmentsData = data;
+            populateDepartmentsDropdown();
+        })
+        .catch(error => {
+            console.error('Error loading JSON:', error);
+        });
+
+    // Populate departments dropdown
+    function populateDepartmentsDropdown() {
+        departmentDropdown.innerHTML = ''; // Clear existing options
+        departmentsData.departments.forEach(department => {
+            const option = document.createElement('option');
+            option.value = department.name;
+            option.textContent = department.name;
+            departmentDropdown.appendChild(option);
+        });
+        // Trigger employee dropdown update when department changes
+        departmentDropdown.addEventListener('change', populateEmployeesDropdown);
+        populateEmployeesDropdown(); // Initial population
+    }
+
+    // Populate employees dropdown based on selected department
+    function populateEmployeesDropdown() {
+        const selectedDepartment = departmentDropdown.value;
+        const selectedDepartmentData = departmentsData.departments.find(dep => dep.name === selectedDepartment);
+        
+        if (selectedDepartmentData) {
+            employeeDropdown.innerHTML = ''; // Clear existing options
+            selectedDepartmentData.employees.forEach(employee => {
+                const option = document.createElement('option');
+                option.value = employee;
+                option.textContent = employee;
+                employeeDropdown.appendChild(option);
+            });
+        }
+    }
+
+
+let ReportDate;
+let name;
+let YesterdayDate;
+let TodayDate;
+let blockers;
+
+async function sendMessage() {
+    let webhookUrl;
+    const selectedDepartment = departmentDropdown.value;
+    const selectedEmployee = employeeDropdown.value;
+    const selectedDepartmentData = departmentsData.departments.find(dep => dep.name === selectedDepartment);
+
+    if (selectedDepartmentData) {
+        const selectedEmployeeIndex = selectedDepartmentData.employees.indexOf(selectedEmployee);
+        if (selectedEmployeeIndex !== -1) {
+            webhookUrl = selectedDepartmentData.webhook;
+            console.log(webhookUrl);
+        }
+    }
+    
+    const formData = new FormData();
+
+    ReportDate = formatDate(document.getElementById('today-date').value);
+    name = document.getElementById('employee').value;
+    YesterdayDate = formatDate(document.getElementById('yesterday-date').value);
+    blockers = document.getElementById('blockers').value;
+
+    // Append all uploaded photos to FormData
+    for (let i = 0; i < uploadedPhotos.length; i++) {
+        formData.append(`photos${i}`, uploadedPhotos[i]);
+    }
+    const payload = {
+        username: `${name}`,
+        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}👥Met with: \n${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}👥Meeting with:\n${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
+    };
+
+    formData.append('payload_json', JSON.stringify(payload)); // Append payload as JSON
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+    } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+    }
+}
+
+function addLink(button) {
+    const linkInputs = button.nextElementSibling;
+    linkInputs.style.display = 'block'; // Show link inputs
+}
+
+// Function to save the entered link for a task or meeting
+function saveLink(button) {
+    const linkInputs = button.parentNode;
+    const linkDescInput = linkInputs.querySelector('.link-description');
+    const linkUrlInput = linkInputs.querySelector('.link-url');
+    const linkDescription = linkDescInput.value.trim();
+    const linkUrl = linkUrlInput.value.trim();
+
+    if (linkDescription && linkUrl) {
+        const taskOrMeetingItem = linkInputs.nextSibling.nextElementSibling;
+        const linkContainer = document.createElement('div');
+        linkContainer.classList.add('task-link'); // Adjust this class name if needed
+        linkContainer.innerHTML = `<a href="${linkUrl}" target="_blank">${linkDescription}</a>`;
+        taskOrMeetingItem.appendChild(linkContainer);
+
+        // Clear input fields and hide link inputs
+        linkDescInput.value = '';
+        linkUrlInput.value = '';
+        linkInputs.style.display = 'none';
+    } else {
+        alert('Please enter both link description and URL.');
+    }
+}
+
+// const webhookUrl = "https://discord.com/api/webhooks/1228352371961368597/KRc9w1rJcpHujyHJn9y95Q0Es0TNOrwnKGfHJklKcu8fDp8EYZnR2-wVF6aWePptCh52";
+// const webhookUrl = "https://discord.com/api/webhooks/1227299910970249429/KPJ-NfB2aqT53rlifmw4e9z7nwEV-HwHRWANNc-olwhiDuyhjtZjmE5BgB7eUZAwnGut"; my server
