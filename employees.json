@@ -1,7 +1,7 @@
 {
     "departments": [
       {
-        "name": "Web development",
+        "name": "Web department",
         "webhook": "https://discord.com/api/webhooks/1228352371961368597/KRc9w1rJcpHujyHJn9y95Q0Es0TNOrwnKGfHJklKcu8fDp8EYZnR2-wVF6aWePptCh52",
         "employees": [
             "Mariia Postovik",
