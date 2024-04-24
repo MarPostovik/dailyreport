@@ -75,11 +75,11 @@ function addTask(taskContainerId) {
         <label for="task-deadline">Deadline:</label> <input type="date" class="task-deadline">
         <p>Priority:</p>
         <div class="priority">
-            <input type="radio" name="priority-${taskContainerId}-${taskCount}" value="High"/>
+            <input type="radio" name="priority-${taskContainerId}-${taskCount}" value="High🔴"/>
             <label>High🔴</label><br>
-            <input type="radio" name="priority-${taskContainerId}-${taskCount}" value="Medium" checked />
+            <input type="radio" name="priority-${taskContainerId}-${taskCount}" value="Medium🟡" checked />
             <label>Medium🟡</label><br>
-            <input type="radio" name="priority-${taskContainerId}-${taskCount}" value="Low" />
+            <input type="radio" name="priority-${taskContainerId}-${taskCount}" value="Low🟢" />
             <label>Low🟢</label><br>
         </div>
     `;
