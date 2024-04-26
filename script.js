@@ -146,7 +146,7 @@ function getTasksInfo(taskContainerId) {
         const taskDescriptionInput = task.querySelector('.task-description');
         const taskDescription = taskDescriptionInput.value.trim() || `Task ${index + 1} description`;
         const taskDeadlineInput = task.querySelector('.task-deadline');
-        const taskDeadline = formatDate(taskDeadlineInput.value) || 'Not selected';
+        const taskDeadline = formatDate(taskDeadlineInput.value) || 'None';
 
         const taskLinkContainer = task.querySelector('.task-links');
         const taskLinkItems = taskLinkContainer.querySelectorAll('.task-link');
@@ -189,7 +189,7 @@ function getMeetingsInfo(meetingContainerId) {
             console.log(link.querySelector('a').innerText)
             const linkDescription = link.querySelector('a').innerText;
             const linkUrl = link.querySelector('a').href;
-            meetingLinkInfo += ` | [${linkDescription}](${linkUrl})`;
+            meetingLinkInfo += ` [${linkDescription}](${linkUrl})`;
         })
       }
         meetingsInfo += `${attendeeName} 🕒 ${timeCST}, CST / ${timeEET}, EET\n${meetingBrief ? `> ${meetingBrief} ${meetingLinkInfo}\n\n` : ''}`;
