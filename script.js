@@ -331,6 +331,10 @@ let YesterdayDate;
 let TodayDate;
 let blockers;
 
+let modal = document.querySelector('.popup');
+let closeModalBtn = document.querySelector('#close-modal-btn');
+closeModalBtn.addEventListener('click', () => modal.classList.remove('popup_active'));
+
 async function sendMessage() {
     let webhookUrl;
     const selectedDepartment = departmentDropdown.value;
@@ -366,7 +370,9 @@ async function sendMessage() {
         const response = await fetch(webhookUrl, {
             method: 'POST',
             body: formData,
-        });
+        },
+        modal.classList.add('popup_active')
+    );
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -374,6 +380,8 @@ async function sendMessage() {
         console.error('There has been a problem with your fetch operation:', error);
     }
 }
+
+
 
 function addLink(button) {
     const linkInputs = button.nextElementSibling;
