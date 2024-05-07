@@ -3,26 +3,55 @@ function formatDate(inputDate) {
     return inputDate ? new Date(inputDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 }
 
-// Function to convert time from 24-hour format to 12-hour format
-function convertTo12HourFormat(time24) {
-    if (!time24) return 'Not selected';
+function convertTime() {
+    const localTimeInput = document.getElementById('localTime');
+    const localTimeValue = localTimeInput.value;
+    
+    // Create a date object with today's date to ensure correct timezone conversion
+    const today = new Date();
+    const localDateTimeString = `${today.toISOString().slice(0, 10)}T${localTimeValue}`;
+    const localDateTime = new Date(localDateTimeString);
+    
+    // Convert local time to UTC
+    const utcTime = localDateTime.toISOString();
 
-    const [hours, minutes] = time24.split(':');
-    let period = 'AM';
-    let hour12 = parseInt(hours, 10);
+    // Convert UTC time to Chicago time
+    const chicagoTime = new Date(utcTime);
+    chicagoTime.toLocaleString('en-US', { timeZone: 'America/Chicago' });
+    const formattedChicagoTime = `${chicagoTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}, CST`;
 
-    if (hour12 >= 12) {
-        period = 'PM';
-        if (hour12 > 12) {
-            hour12 -= 12;
-        }
-    }
+    // Convert UTC time to Kiev time
+    const kievTime = new Date(utcTime);
+    kievTime.toLocaleString('en-US', { timeZone: 'Europe/Kiev' });
+    const formattedKievTime = `${kievTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}, EET`;
 
-    // Pad single-digit hours with leading zero for consistency
-    const formattedHour = hour12.toString().padStart(2, '0');
-
-    return `${formattedHour}:${minutes} ${period}`;
+    // Add Chicago and Kiev times to the message content
+    const messageContent = `Local Time: ${localTimeValue}\nChicago Time: ${formattedChicagoTime}\nKiev Time: ${formattedKievTime}`;
+    // Append message content to your existing payload
+    payload.content += `\n\n${messageContent}`;
 }
+convertTime(); // Call the function to convert time
+
+// Function to convert time from 24-hour format to 12-hour format
+// function convertTo12HourFormat(time24) {
+//     if (!time24) return 'Not selected';
+
+//     const [hours, minutes] = time24.split(':');
+//     let period = 'AM';
+//     let hour12 = parseInt(hours, 10);
+
+//     if (hour12 >= 12) {
+//         period = 'PM';
+//         if (hour12 > 12) {
+//             hour12 -= 12;
+//         }
+//     }
+
+//     // Pad single-digit hours with leading zero for consistency
+//     const formattedHour = hour12.toString().padStart(2, '0');
+
+//     return `${formattedHour}:${minutes} ${period}`;
+// }
 
 // Function to update the visibility of the Remove Last Task button
 function updateRemoveTaskButtonVisibility(taskContainerId) {
@@ -411,6 +440,7 @@ function saveLink(button) {
         alert('Please enter both link description and URL.');
     }
 }
+// const webhookUrl = "https://discord.com/api/webhooks/1237410356180287569/T_Q7VLWR8pLLDaEx5x8_DIBeXfclaKoHD3BBgEwMP5bIDIn9_4D1_nqYk0adYjc8hnpD"
 
 // const webhookUrl = "https://discord.com/api/webhooks/1228352371961368597/KRc9w1rJcpHujyHJn9y95Q0Es0TNOrwnKGfHJklKcu8fDp8EYZnR2-wVF6aWePptCh52";
 // const webhookUrl = "https://discord.com/api/webhooks/1227299910970249429/KPJ-NfB2aqT53rlifmw4e9z7nwEV-HwHRWANNc-olwhiDuyhjtZjmE5BgB7eUZAwnGut"; my server
