@@ -112,7 +112,7 @@ textarea#blockers{
     gap: 6px;
     padding: 6px;
 }
-.save-btn{
+.save-btn, .removeLinkButton{
     background: #424649;
     padding: 4px;
 }
