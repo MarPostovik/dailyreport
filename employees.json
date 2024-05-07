@@ -1,6 +1,13 @@
 {
     "departments": [
       {
+        "name": "Choose your department",
+        "webhook": "none",
+        "employees":[
+          "Choose your name"
+        ]
+      },
+      {
         "name": "Web department",
         "webhook": "https://discord.com/api/webhooks/1232758445547978802/LcwwdIQzlGqIQXVWUUqekeIdrG0w9oPjupdNUCz2kL0HQLw4vXbGMR-cQli4BDpvwu46",
         "employees": [

@@ -192,6 +192,11 @@ function getMeetingsInfo(meetingContainerId) {
             meetingLinkInfo += ` [${linkDescription}](${linkUrl})`;
         })
       }
+        if (meetingContainerId === 'yesterdayMeetings') {
+            meetingsInfo = "👥Met with:\n\n" 
+        } else{
+            meetingsInfo = "👥Meeting with:\n\n" 
+        }
         meetingsInfo += `${attendeeName} 🕒 ${timeCST}, CST / ${timeEET}, EET\n${meetingBrief ? `> ${meetingBrief} ${meetingLinkInfo}\n\n` : ''}`;
     });
     return meetingsInfo;
@@ -362,7 +367,7 @@ async function sendMessage() {
     }
     const payload = {
         username: `${name}`,
-        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}👥Met with: \n${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}👥Meeting with:\n${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
+        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
     };
 
     formData.append('payload_json', JSON.stringify(payload)); // Append payload as JSON
