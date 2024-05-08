@@ -171,7 +171,12 @@ function getTasksInfo(taskContainerId) {
 function getMeetingsInfo(meetingContainerId) {
     const meetingContainer = document.getElementById(meetingContainerId);
     const meetingItems = meetingContainer.querySelectorAll('.report__meeting');
-    let meetingsInfo = '';
+    let meetingsInfo;
+    if (meetingContainerId === 'yesterdayMeetings') {
+        meetingsInfo = "👥Met with:\n\n" 
+    } else{
+        meetingsInfo = "👥Meeting with:\n\n" 
+    }
     meetingItems.forEach((meeting, index) => {
         const attendeeName = meeting.querySelector('.meeting-person').value || `Attendee ${index + 1}`;
         const meetingCST = meeting.querySelector('.meeting-cst').value || '';
@@ -192,11 +197,7 @@ function getMeetingsInfo(meetingContainerId) {
             meetingLinkInfo += ` [${linkDescription}](${linkUrl})`;
         })
       }
-        if (meetingContainerId === 'yesterdayMeetings') {
-            meetingsInfo = "👥Met with:\n\n" 
-        } else{
-            meetingsInfo = "👥Meeting with:\n\n" 
-        }
+        
         meetingsInfo += `${attendeeName} 🕒 ${timeCST}, CST / ${timeEET}, EET\n${meetingBrief ? `> ${meetingBrief} ${meetingLinkInfo}\n\n` : ''}`;
     });
     return meetingsInfo;
