@@ -49,9 +49,13 @@
             <h3>👥Met with:</h3>
             <li class="report__meeting">
                 <label for="meeting-person">Name and Position / Team</label>
-                <input type="text" class="meeting-person" placeholder="Attendee 1"> 
-                <label for="localTime">Time:</label>
-                <input type="time" id="localTime">
+                <input type="text" class="meeting-person" placeholder="Attendee 1">
+                <label for="meeting-gmt">Time GMT:</label>
+                <input type="time" id="meeting-gmt" class="meeting-gmt">
+                <!-- <label for="meeting-cst">Time CST:</label>
+                <input type="time" class="meeting-cst">
+                <label for="meeting-eet">Time EET:</label>
+                <input type="time" class="meeting-eet"> -->
                 <textarea name="" class="meeting-brief" cols="40" rows="3">Meeting 1 brief</textarea>
                 <button class="add-link-btn" onclick="addLink(this)" type="button">Add Link</button>
                 <div class="link-inputs" style="display: none;">
@@ -97,11 +101,13 @@
             <h3>👥Meeting with:</h3>
             <li class="report__meeting">
                 <label for="meeting-person">Name and Position / Team</label>
-                <input type="text" class="meeting-person" placeholder="Mentor Caleb"> 
-                <label for="meeting-cst">Time CST:</label>
+                <input type="text" class="meeting-person" placeholder="Mentor Caleb">
+                <label for="meeting-gmt">Time GMT:</label>
+                <input type="time" id="meeting-gmt" class="meeting-gmt">
+                <!-- <label for="meeting-cst">Time CST:</label>
                 <input type="time" class="meeting-cst">
-                <label for="meeting-eet">Time EET:</label>
-                <input type="time" class="meeting-eet">
+                <label for="meeting-eet">Time EET:</label> 
+                <input type="time" class="meeting-eet">-->
             </li>
         </ul>
         <button type="button" onclick="addMeeting('todayMeetings')" class="btn-primary">Add Meeting</button>

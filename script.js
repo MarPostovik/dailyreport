@@ -3,55 +3,12 @@ function formatDate(inputDate) {
     return inputDate ? new Date(inputDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 }
 
-function convertTime() {
-    const localTimeInput = document.getElementById('localTime');
-    const localTimeValue = localTimeInput.value;
-    
-    // Create a date object with today's date to ensure correct timezone conversion
-    const today = new Date();
-    const localDateTimeString = `${today.toISOString().slice(0, 10)}T${localTimeValue}`;
-    const localDateTime = new Date(localDateTimeString);
-    
-    // Convert local time to UTC
-    const utcTime = localDateTime.toISOString();
-
-    // Convert UTC time to Chicago time
-    const chicagoTime = new Date(utcTime);
-    chicagoTime.toLocaleString('en-US', { timeZone: 'America/Chicago' });
-    const formattedChicagoTime = `${chicagoTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}, CST`;
-
-    // Convert UTC time to Kiev time
-    const kievTime = new Date(utcTime);
-    kievTime.toLocaleString('en-US', { timeZone: 'Europe/Kiev' });
-    const formattedKievTime = `${kievTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}, EET`;
-
-    // Add Chicago and Kiev times to the message content
-    const messageContent = `Local Time: ${localTimeValue}\nChicago Time: ${formattedChicagoTime}\nKiev Time: ${formattedKievTime}`;
-    // Append message content to your existing payload
-    payload.content += `\n\n${messageContent}`;
+// Функція конвертації GMT-часу в час Чикаго та Києва
+function convertToTimezones(gmtTime) {
+    const chicagoTime = new Date(gmtTime).toLocaleString("en-US", {timeZone: "America/Chicago"});
+    const kyivTime = new Date(gmtTime).toLocaleString("en-US", {timeZone: "Europe/Kiev"});
+    return { chicagoTime, kyivTime };
 }
-convertTime(); // Call the function to convert time
-
-// Function to convert time from 24-hour format to 12-hour format
-// function convertTo12HourFormat(time24) {
-//     if (!time24) return 'Not selected';
-
-//     const [hours, minutes] = time24.split(':');
-//     let period = 'AM';
-//     let hour12 = parseInt(hours, 10);
-
-//     if (hour12 >= 12) {
-//         period = 'PM';
-//         if (hour12 > 12) {
-//             hour12 -= 12;
-//         }
-//     }
-
-//     // Pad single-digit hours with leading zero for consistency
-//     const formattedHour = hour12.toString().padStart(2, '0');
-
-//     return `${formattedHour}:${minutes} ${period}`;
-// }
 
 // Function to update the visibility of the Remove Last Task button
 function updateRemoveTaskButtonVisibility(taskContainerId) {
@@ -98,7 +55,7 @@ function addTask(taskContainerId) {
         <div class="link-inputs" style="display: none;">
             <input type="text" placeholder="Link description" class="link-description">
             <input type="url" placeholder="Link URL" class="link-url">
-            <button onclick="saveLink(this)" type="button">Save</button>
+            <button onclick="saveLink(this)" type="button" class="save-btn">Save</button>
         </div>
         <div class="task-links"></div>
         <label for="task-deadline">Deadline:</label> <input type="date" class="task-deadline">
@@ -122,22 +79,23 @@ function addMeeting(meetingContainerId) {
     const meetingContainer = document.getElementById(meetingContainerId);
     const meetingCount = meetingContainer.querySelectorAll('.report__meeting').length + 1;
 
+    // Отримання GMT-часу
+    const gmtTime = new Date();
+
     const newMeeting = document.createElement('li');
     newMeeting.classList.add('report__meeting');
     newMeeting.innerHTML = `
         <label for="meeting-person">Name and Position / Team</label>
         <input type="text" class="meeting-person" placeholder="Attendee ${meetingCount}"> 
-        <label for="meeting-cst">Time CST:</label>
-        <input type="time" class="meeting-cst">
-        <label for="meeting-eet">Time EET:</label>
-        <input type="time" class="meeting-eet">
+        <label for="meeting-gmt">Time GMT:</label>
+        <input type="time" id="meeting-gmt" class="meeting-gmt">
         ${meetingContainerId.includes('yesterday') ? `
             <textarea name="" class="meeting-brief" cols="40" rows="3">Meeting ${meetingCount} brief</textarea>
             <button class="add-link-btn" onclick="addLink(this)" type="button">Add Link</button>
             <div class="link-inputs" style="display: none;">
                 <input type="text" placeholder="Link description" class="link-description">
                 <input type="url" placeholder="Link URL" class="link-url">
-                <button onclick="saveLink(this)" type="button">Save</button>
+                <button onclick="saveLink(this)" type="button" class="save-btn">Save</button>
             </div>
             <div class="task-links"></div>
         ` : ''}
@@ -197,31 +155,32 @@ function getTasksInfo(taskContainerId) {
     return tasksInfo;
 }
 
-function getMeetingsInfo(meetingContainerId) {
+function getMeetingsInfo(meetingContainerId, gmtTime) {
     const meetingContainer = document.getElementById(meetingContainerId);
     const meetingItems = meetingContainer.querySelectorAll('.report__meeting');
-    let meetingsInfo = '';
+    let meetingsInfo;
+    if (meetingContainerId === 'yesterdayMeetings') {
+        meetingsInfo = "👥Met with:\n\n" 
+    } else{
+        meetingsInfo = "👥Meeting with:\n\n" 
+    }
     meetingItems.forEach((meeting, index) => {
         const attendeeName = meeting.querySelector('.meeting-person').value || `Attendee ${index + 1}`;
-        const meetingCST = meeting.querySelector('.meeting-cst').value || '';
-        const meetingEET = meeting.querySelector('.meeting-eet').value || '';
+        const { chicagoTime, kyivTime } = convertToTimezones(gmtTime);
         const meetingBrief = meeting.querySelector('.meeting-brief')?.value || '';
-        const timeCST = meetingCST ? convertTo12HourFormat(meetingCST) : 'Not selected';
-        const timeEET = meetingEET ? convertTo12HourFormat(meetingEET) : 'Not selected';
 
-        // Get the added link description and URL for this meeting
         const meetingLinkContainer = meeting.querySelector('.task-links');
         const meetingLinkItems = meetingLinkContainer?.querySelectorAll('.task-link');
         let meetingLinkInfo = '';
         if (meetingLinkItems) {
-        meetingLinkItems.forEach((link) =>  {
-            console.log(link.querySelector('a').innerText)
-            const linkDescription = link.querySelector('a').innerText;
-            const linkUrl = link.querySelector('a').href;
-            meetingLinkInfo += ` [${linkDescription}](${linkUrl})`;
-        })
-      }
-        meetingsInfo += `${attendeeName} 🕒 ${timeCST}, CST / ${timeEET}, EET\n${meetingBrief ? `> ${meetingBrief} ${meetingLinkInfo}\n\n` : ''}`;
+            meetingLinkItems.forEach((link) =>  {
+                const linkDescription = link.querySelector('a').innerText;
+                const linkUrl = link.querySelector('a').href;
+                meetingLinkInfo += ` [${linkDescription}](${linkUrl})`;
+            })
+        }
+        
+        meetingsInfo += `${attendeeName} 🕒 ${chicagoTime}, CST / ${kyivTime}, EET\n${meetingBrief ? `> ${meetingBrief} ${meetingLinkInfo}\n\n` : ''}`;
     });
     return meetingsInfo;
 }
@@ -366,6 +325,20 @@ closeModalBtn.addEventListener('click', () => modal.classList.remove('popup_acti
 
 async function sendMessage() {
     let webhookUrl;
+        // Отримання значення GMT-часу з поля вводу
+        const gmtTimeString = document.getElementById('meeting-gmt').value;
+        const [hours, minutes] = gmtTimeString.split(':'); // Розділити рядок на години та хвилини
+        const gmtTime = new Date(); // Початкова дата, наприклад, сьогоднішня дата
+        gmtTime.setUTCHours(hours); // Встановити години
+        gmtTime.setUTCMinutes(minutes); // Встановити хвилини
+        
+
+
+        // Конвертація GMT-часу в часи Чикаго та Києва
+        const { chicagoTime, kyivTime } = convertToTimezones(gmtTime);
+    
+        // Додавання конвертованих часів до повідомлення
+        const content = `🕒 Час по Чикаго: ${chicagoTime}, CST / Час по Києву: ${kyivTime}, EET`;
     const selectedDepartment = departmentDropdown.value;
     const selectedEmployee = employeeDropdown.value;
     const selectedDepartmentData = departmentsData.departments.find(dep => dep.name === selectedDepartment);
@@ -391,7 +364,7 @@ async function sendMessage() {
     }
     const payload = {
         username: `${name}`,
-        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}👥Met with: \n${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}👥Meeting with:\n${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
+        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
     };
 
     formData.append('payload_json', JSON.stringify(payload)); // Append payload as JSON
@@ -429,7 +402,8 @@ function saveLink(button) {
         const taskOrMeetingItem = linkInputs.nextSibling.nextElementSibling;
         const linkContainer = document.createElement('div');
         linkContainer.classList.add('task-link'); // Adjust this class name if needed
-        linkContainer.innerHTML = `<a href="${linkUrl}" target="_blank">${linkDescription}</a>`;
+        linkContainer.innerHTML = `<a href="${linkUrl}" target="_blank">${linkDescription}</a>
+                                   <button type="button" class="removeLinkButton" onclick="removeLink()">Remove this link</button>`;
         taskOrMeetingItem.appendChild(linkContainer);
 
         // Clear input fields and hide link inputs
@@ -439,6 +413,11 @@ function saveLink(button) {
     } else {
         alert('Please enter both link description and URL.');
     }
+}
+
+function removeLink(button) {
+    const linkContainer = button.parentNode;
+    linkContainer.parentNode.removeChild(linkContainer);
 }
 // const webhookUrl = "https://discord.com/api/webhooks/1237410356180287569/T_Q7VLWR8pLLDaEx5x8_DIBeXfclaKoHD3BBgEwMP5bIDIn9_4D1_nqYk0adYjc8hnpD"
 
