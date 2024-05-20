@@ -5,10 +5,13 @@ function formatDate(inputDate) {
 
 // Функція конвертації GMT-часу в час Чикаго та Києва
 function convertToTimezones(gmtTime) {
-    const chicagoTime = new Date(gmtTime).toLocaleString("en-US", {timeZone: "America/Chicago"});
-    const kyivTime = new Date(gmtTime).toLocaleString("en-US", {timeZone: "Europe/Kiev"});
+    const chicagoTime = new Date(gmtTime).toLocaleString("en-US", {timeZone: "America/Chicago"}).split(',')[1].trim().replace(/\d+:\d+:\d+/, time => time.slice(0, -3));
+    const kyivTime = new Date(gmtTime).toLocaleString("en-US", {timeZone: "Europe/Kiev"}).split(',')[1].trim().replace(/\d+:\d+:\d+/, time => time.slice(0, -3));
     return { chicagoTime, kyivTime };
 }
+
+
+
 
 // Function to update the visibility of the Remove Last Task button
 function updateRemoveTaskButtonVisibility(taskContainerId) {
@@ -325,20 +328,29 @@ closeModalBtn.addEventListener('click', () => modal.classList.remove('popup_acti
 
 async function sendMessage() {
     let webhookUrl;
-        // Отримання значення GMT-часу з поля вводу
-        const gmtTimeString = document.getElementById('meeting-gmt').value;
-        const [hours, minutes] = gmtTimeString.split(':'); // Розділити рядок на години та хвилини
-        const gmtTime = new Date(); // Початкова дата, наприклад, сьогоднішня дата
-        gmtTime.setUTCHours(hours); // Встановити години
-        gmtTime.setUTCMinutes(minutes); // Встановити хвилини
-        
+    const gmtTimeInputs = document.querySelectorAll('.meeting-gmt');
+    let gmtTimes = [];
 
+    // Отримати значення GMT-часу з кожного введення
+    gmtTimeInputs.forEach(input => {
+        const gmtTimeString = input.value;
+        const [hours, minutes] = gmtTimeString.split(':');
+        const gmtTime = new Date();
+        gmtTime.setUTCHours(hours);
+        gmtTime.setUTCMinutes(minutes);
+        gmtTimes.push(gmtTime);
+    });
 
-        // Конвертація GMT-часу в часи Чикаго та Києва
-        const { chicagoTime, kyivTime } = convertToTimezones(gmtTime);
-    
-        // Додавання конвертованих часів до повідомлення
-        const content = `🕒 Час по Чикаго: ${chicagoTime}, CST / Час по Києву: ${kyivTime}, EET`;
+    // Конвертація GMT-часу в часи Чикаго та Києва
+    const chicagoTimes = gmtTimes.map(gmtTime => new Date(gmtTime).toLocaleString("en-US", {timeZone: "America/Chicago"}).split(',')[1].trim().replace(/\d+:\d+:\d+/, time => time.slice(0, -3)));
+    const kyivTimes = gmtTimes.map(gmtTime => new Date(gmtTime).toLocaleString("en-US", {timeZone: "Europe/Kiev"}).split(',')[1].trim().replace(/\d+:\d+:\d+/, time => time.slice(0, -3)));
+
+    // Формування вмісту повідомлення з отриманими часами
+    let content = '';
+    for (let i = 0; i < gmtTimes.length; i++) {
+        content += `🕒 Час по Чикаго: ${chicagoTimes[i]}, CST / Час по Києву: ${kyivTimes[i]}, EET\n`;
+    }
+
     const selectedDepartment = departmentDropdown.value;
     const selectedEmployee = employeeDropdown.value;
     const selectedDepartmentData = departmentsData.departments.find(dep => dep.name === selectedDepartment);
@@ -347,10 +359,9 @@ async function sendMessage() {
         const selectedEmployeeIndex = selectedDepartmentData.employees.indexOf(selectedEmployee);
         if (selectedEmployeeIndex !== -1) {
             webhookUrl = selectedDepartmentData.webhook;
-            console.log(webhookUrl);
         }
     }
-    
+
     const formData = new FormData();
 
     ReportDate = formatDate(document.getElementById('today-date').value);
@@ -364,7 +375,7 @@ async function sendMessage() {
     }
     const payload = {
         username: `${name}`,
-        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}${getMeetingsInfo('yesterdayMeetings')}📌What I will do today:\n\n${getTasksInfo('todayTasks')}${getMeetingsInfo('todayMeetings')}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
+        content: `📅 Date: ${ReportDate} \n\n✅What I did yesterday ${YesterdayDate}:\n\n${getTasksInfo('yesterdayTasks')}${getMeetingsInfo('yesterdayMeetings', gmtTimes[0])}📌What I will do today:\n\n${getTasksInfo('todayTasks')}${getMeetingsInfo('todayMeetings', gmtTimes[1])}\n⛔️Blockers: ${blockers}\n[Documentation on daily reports](https://docs.google.com/document/d/11sqd6GyqTMoch-a5z6dAFRVII0nmgxj_m1EeZ2yNVQY/edit#heading=h.ac36khbgswt8)`,
     };
 
     formData.append('payload_json', JSON.stringify(payload)); // Append payload as JSON
@@ -382,6 +393,7 @@ async function sendMessage() {
         console.error('There has been a problem with your fetch operation:', error);
     }
 }
+
 
 
 
